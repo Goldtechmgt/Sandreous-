@@ -255,11 +255,116 @@
   </div>
 
   <!-- Player controls, progress, volume, social buttons same as before -->
-  <div class="player-controls">
-    <button id="prev">⏮️ Previous</button>
-    <button id="play">▶️ Play</button>
-    <button id="next">⏭️ Next</button>
+  <!-- Add this inside body, remove the old top player controls from the playlist container if desired -->
+
+<!-- Floating Now Playing Bar -->
+<div id="now-playing">
+  <div id="now-song-info">
+    <span id="now-title">Not Playing</span>
   </div>
+  <div class="now-controls">
+    <button id="now-prev">⏮️</button>
+    <button id="now-play">▶️</button>
+    <button id="now-next">⏭️</button>
+  </div>
+  <div class="now-progress-container">
+    <div class="now-progress"></div>
+  </div>
+</div>
+
+<style>
+#now-playing {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #111;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 20px;
+  z-index: 9999;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
+}
+#now-song-info {
+  color: #f39c12;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.now-controls {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 5px;
+}
+.now-controls button {
+  background: #f39c12;
+  border: none;
+  color: #000;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.now-controls button:hover { background: #fff; }
+.now-progress-container {
+  background: #333;
+  width: 100%;
+  height: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  position: relative;
+}
+.now-progress {
+  background: #f39c12;
+  height: 100%;
+  width: 0%;
+  border-radius: 5px;
+}
+</style>
+
+<script>
+// Floating Now Playing Controls
+const nowPlayBtn = document.getElementById('now-play');
+const nowPrevBtn = document.getElementById('now-prev');
+const nowNextBtn = document.getElementById('now-next');
+const nowTitle = document.getElementById('now-title');
+const nowProgress = document.querySelector('.now-progress');
+const nowProgressContainer = document.querySelector('.now-progress-container');
+
+function updateNowPlaying() {
+  nowTitle.textContent = playlist[currentIndex].querySelector('h3').textContent;
+  nowPlayBtn.textContent = audio.paused ? '▶️' : '⏸️';
+}
+
+nowPlayBtn.addEventListener('click', () => {
+  audio.paused ? audio.play() : audio.pause();
+  updateNowPlaying();
+});
+
+nowNextBtn.addEventListener('click', () => {
+  currentIndex = (currentIndex+1)%playlist.length;
+  loadSong(currentIndex);
+  updateNowPlaying();
+});
+
+nowPrevBtn.addEventListener('click', () => {
+  currentIndex = (currentIndex-1 + playlist.length)%playlist.length;
+  loadSong(currentIndex);
+  updateNowPlaying();
+});
+
+audio.addEventListener('timeupdate', ()=>{
+  const progressPercent = (audio.currentTime/audio.duration)*100;
+  nowProgress.style.width = `${progressPercent}%`;
+});
+
+nowProgressContainer.addEventListener('click', (e)=>{
+  const width = nowProgressContainer.clientWidth;
+  const clickX = e.offsetX;
+  audio.currentTime = (clickX/width)*audio.duration;
+});
+</script>
 
   <div class="progress-container">
     <div class="progress"></div>
